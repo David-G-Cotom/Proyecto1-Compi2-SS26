@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mycompany.proyecto1_compi2_ss26.errores.Error;
+
 /**
  *
  * @author david
@@ -18,9 +20,9 @@ public class CatalogoExportado {
     private final Map<String, DescriptorEstructura> estructuras = new HashMap<>();
     private final Map<String, List<DescriptorFuncion>> funciones = new HashMap<>();
     private final Map<String, DescriptorClase> clases = new HashMap<>();
-    private final List<Object> errores;
+    private final List<Error> errores;
 
-    public CatalogoExportado(String rutaArchivo, List<Object> errores) {
+    public CatalogoExportado(String rutaArchivo, List<Error> errores) {
         this.rutaArchivo = rutaArchivo;
         this.errores = errores;
     }
@@ -41,7 +43,7 @@ public class CatalogoExportado {
         return clases;
     }
 
-    public List<Object> getErrores() {
+    public List<Error> getErrores() {
         return errores;
     }
 

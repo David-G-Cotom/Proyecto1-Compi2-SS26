@@ -6,6 +6,7 @@ package com.mycompany.proyecto1_compi2_ss26.lenguajes.y;
 
 import com.mycompany.YLexer;
 import com.mycompany.YParser;
+import com.mycompany.proyecto1_compi2_ss26.errores.RecolectorErrores;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -28,15 +29,12 @@ public class Indentador implements TokenSource {
     private final Lexer lexerCrudo;
     private final Deque<Integer> pilaIdentacion = new ArrayDeque<>();
     private final Deque<Token> pendientes = new ArrayDeque<>();
-    private final List<String> erroresIdentacion = new ArrayList<>();
+    private final RecolectorErrores coleccionErrores;
 
-    public Indentador(Lexer lexerCrudo) {
+    public Indentador(Lexer lexerCrudo, RecolectorErrores coleccionErrores) {
         this.lexerCrudo = lexerCrudo;
+        this.coleccionErrores = coleccionErrores;
         this.pilaIdentacion.push(0);
-    }
-
-    public List<String> getErroresIdentacion() {
-        return erroresIdentacion;
     }
 
     @Override
@@ -106,7 +104,8 @@ public class Indentador implements TokenSource {
                 this.pendientes.add(this.sintetico(YParser.DEDENT, tokenSiguiente));
             }
             if (this.pilaIdentacion.peek() != nivel) {
-                this.erroresIdentacion.add("Identacion inconsistente en linea " + tokenSiguiente.getLine() + ": no calza con ningun nivel de indentacion abierto.");
+                this.coleccionErrores.addLexicalError(tokenSiguiente.getLine(), tokenSiguiente.getCharPositionInLine() + 1,
+                        "Identacion inconsistete: no calza con ningun nivel de identacion abierto", tokenSiguiente.getText());
                 this.pilaIdentacion.push(nivel);    //Insertar elemento al principio
             }
         }
