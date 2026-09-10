@@ -54,9 +54,9 @@ sentenciaLeer: llamadaLeer NEWLINE;
 
 llamadaLeer: KW_LEER PAR_ABRE PAR_CIERRA;
 
-sentenciaSi: KW_SI PAR_ABRE expresion PAR_CIERRA KW_ENTONCES NEWLINE bloqueSentencias
-                (KW_SINO PAR_ABRE expresion PAR_CIERRA KW_ENTONCES NEWLINE bloqueSentencias)*
-                (KW_CONTRARIO NEWLINE bloqueSentencias)?;
+sentenciaSi: KW_SI PAR_ABRE expresion PAR_CIERRA KW_ENTONCES DOSPUNTOS? NEWLINE bloqueSentencias
+                (KW_SINO PAR_ABRE expresion PAR_CIERRA KW_ENTONCES DOSPUNTOS? NEWLINE bloqueSentencias)*
+                (KW_CONTRARIO DOSPUNTOS? NEWLINE bloqueSentencias)?;
 
 sentenciaElegir: KW_ELEGIR PAR_ABRE expresion PAR_CIERRA DOSPUNTOS NEWLINE INDENT casoElegir+ siempreElegir? DEDENT;
 
@@ -74,7 +74,7 @@ paraInit: tipoDato ID (ASIGNAR expresion)?
 paraActualizacion: accesoVariable op=(INCREMENTO | DECREMENTO)
                 | accesoVariable ASIGNAR expresion;
 
-sentenciaMientras: KW_MIENTRAS PAR_ABRE expresion PAR_CIERRA KW_HACER NEWLINE bloqueSentencias;
+sentenciaMientras: KW_MIENTRAS PAR_ABRE expresion PAR_CIERRA KW_HACER DOSPUNTOS? NEWLINE bloqueSentencias;
 
 sentenciaHacerMientras: KW_HACER DOSPUNTOS NEWLINE bloqueSentencias KW_MIENTRAS PAR_ABRE expresion PAR_CIERRA NEWLINE;
 
