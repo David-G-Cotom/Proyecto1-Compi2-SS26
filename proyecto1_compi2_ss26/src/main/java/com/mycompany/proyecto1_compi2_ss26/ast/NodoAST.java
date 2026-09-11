@@ -10,14 +10,14 @@ package com.mycompany.proyecto1_compi2_ss26.ast;
  */
 public class NodoAST {
 
-    private final int line;
+    private final int linea;
 
-    public NodoAST(int line) {
-        this.line = line;
+    public NodoAST(int linea) {
+        this.linea = linea;
     }
 
-    public int getLine() {
-        return line;
+    public int getLinea() {
+        return linea;
     }
 
 }

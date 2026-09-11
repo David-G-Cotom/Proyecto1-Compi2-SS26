@@ -14,14 +14,14 @@ import java.util.List;
 public class NodoDeclaracionVariable extends NodoAST {
 
     private final String tipo;
-    private final String nomrbre;
+    private final String nombre;
     private final List<NodoAST> dimensiones;
     private final NodoAST inicializador;
 
-    public NodoDeclaracionVariable(String tipo, String nomrbre, List<NodoAST> dimensiones, NodoAST inicializador, int line) {
+    public NodoDeclaracionVariable(String tipo, String nombre, List<NodoAST> dimensiones, NodoAST inicializador, int line) {
         super(line);
         this.tipo = tipo;
-        this.nomrbre = nomrbre;
+        this.nombre = nombre;
         this.dimensiones = dimensiones;
         this.inicializador = inicializador;
     }
@@ -30,8 +30,8 @@ public class NodoDeclaracionVariable extends NodoAST {
         return tipo;
     }
 
-    public String getNomrbre() {
-        return nomrbre;
+    public String getNombre() {
+        return nombre;
     }
 
     public List<NodoAST> getDimensiones() {

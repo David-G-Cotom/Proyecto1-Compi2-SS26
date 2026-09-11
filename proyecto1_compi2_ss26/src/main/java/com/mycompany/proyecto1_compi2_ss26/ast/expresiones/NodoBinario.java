@@ -12,19 +12,19 @@ import com.mycompany.proyecto1_compi2_ss26.ast.NodoAST;
  */
 public class NodoBinario extends NodoAST {
 
-    private final String operado;
+    private final String operador;
     private final NodoAST izquierda;
     private final NodoAST derecha;
 
-    public NodoBinario(String operado, NodoAST izquierda, NodoAST derecha, int line) {
+    public NodoBinario(String operador, NodoAST izquierda, NodoAST derecha, int line) {
         super(line);
-        this.operado = operado;
+        this.operador = operador;
         this.izquierda = izquierda;
         this.derecha = derecha;
     }
 
-    public String getOperado() {
-        return operado;
+    public String getOperador() {
+        return operador;
     }
 
     public NodoAST getIzquierda() {
