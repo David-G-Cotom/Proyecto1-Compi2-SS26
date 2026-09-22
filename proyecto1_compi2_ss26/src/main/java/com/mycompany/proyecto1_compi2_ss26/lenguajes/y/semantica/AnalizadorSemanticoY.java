@@ -4,6 +4,10 @@
  */
 package com.mycompany.proyecto1_compi2_ss26.lenguajes.y.semantica;
 
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoFor;
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoLeer;
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoFuncion;
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoCaso;
 import com.mycompany.proyecto1_compi2_ss26.ast.NodoAST;
 import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoAccesoVariable;
 import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoBinario;
@@ -55,7 +59,7 @@ public class AnalizadorSemanticoY {
         RegistradorFuncionesY registradorFunciones = new RegistradorFuncionesY(this.coleccionErrores);
         Map<String, List<DescriptorFuncion>> funciones = registradorFunciones.registrar(archivo.getFunciones(), estructuras);
 
-        for (NodoFuncionY funcionAST : archivo.getFunciones()) {
+        for (NodoFuncion funcionAST : archivo.getFunciones()) {
             List<DescriptorFuncion> firmas = funciones.get(funcionAST.getNombre());
             DescriptorFuncion firmaExacta = this.buscarFirmaExacta(firmas, funcionAST, estructuras, registradorFunciones);
             TipoDato tipoRetorno = (firmaExacta == null) ? TipoVacio.INSTANCIA : firmaExacta.getTipoRetorno();
@@ -68,7 +72,7 @@ public class AnalizadorSemanticoY {
         return catalogo;
     }
 
-    private DescriptorFuncion buscarFirmaExacta(List<DescriptorFuncion> firmas, NodoFuncionY funcionAST,
+    private DescriptorFuncion buscarFirmaExacta(List<DescriptorFuncion> firmas, NodoFuncion funcionAST,
             Map<String, DescriptorEstructura> estructuras, RegistradorFuncionesY registradorFunciones) {
         if (firmas == null || firmas.isEmpty()) {
             return null;
@@ -106,7 +110,7 @@ public class AnalizadorSemanticoY {
         return null;
     }
 
-    private void analizarFuncion(NodoFuncionY funcionAST, Map<String, DescriptorEstructura> estructuras,
+    private void analizarFuncion(NodoFuncion funcionAST, Map<String, DescriptorEstructura> estructuras,
             Map<String, List<DescriptorFuncion>> funciones, TipoDato tipoRetorno) {
         Contexto ctx = new Contexto(new HashMap<>(estructuras), funciones, tipoRetorno);
 
@@ -129,26 +133,26 @@ public class AnalizadorSemanticoY {
             this.validarDeclaracion(nodoDeclaracionVariable, ctx);
         } else if (nodo instanceof NodoAsignacion nodoAsignacion) {
             this.validarAsignacion(nodoAsignacion, ctx);
-        } else if (nodo instanceof NodoIncrementoDecremento nodoIncrementoDecremento) {
+        } else if (nodo instanceof NodoIncDec nodoIncrementoDecremento) {
             TipoDato tipo = this.inferirTipo(nodoIncrementoDecremento.getDestino(), ctx);
             if (tipo != null && !this.esNumerico(tipo)) {
                 this.error(nodo, "'++'/'--' solo aplica a variables numéricas");
             }
         } else if (nodo instanceof NodoLlamadaFuncion) {
             this.inferirTipo(nodo, ctx); // valida existencia/firma, descarta el valor de retorno
-        } else if (nodo instanceof NodoImprimir nodoImprimir) {
+        } else if (nodo instanceof NodoImprimirY nodoImprimir) {
             this.inferirTipo(nodoImprimir.getExpresion(), ctx);
         } else if (nodo instanceof NodoLeer) {
             // sin validación adicional: leer() no requiere argumentos
-        } else if (nodo instanceof NodoSi nodoSi) {
+        } else if (nodo instanceof NodoSiY nodoSi) {
             this.validarSi(nodoSi, ctx);
-        } else if (nodo instanceof NodoElegir nodoElegir) {
+        } else if (nodo instanceof NodoSwitch nodoElegir) {
             this.validarElegir(nodoElegir, ctx);
-        } else if (nodo instanceof NodoPara nodoPara) {
+        } else if (nodo instanceof NodoFor nodoPara) {
             this.validarPara(nodoPara, ctx);
-        } else if (nodo instanceof NodoMientras nodoMientras) {
+        } else if (nodo instanceof NodoWhile nodoMientras) {
             this.validarMientras(nodoMientras, ctx);
-        } else if (nodo instanceof NodoHacerMientras nodoHacerMientras) {
+        } else if (nodo instanceof NodoDoWhile nodoHacerMientras) {
             this.validarHacerMientras(nodoHacerMientras, ctx);
         } else if (nodo instanceof NodoContinuar) {
             if (!ctx.isDentroDeCiclo()) {
@@ -275,7 +279,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarSi(NodoSi nodo, Contexto ctx) {
+    private void validarSi(NodoSiY nodo, Contexto ctx) {
         this.validarCondicionBooleana(nodo.getCondicion(), ctx);
         ctx.getTabla().entrarAmbito();
         for (NodoAST s : nodo.getCuerpoSi()) {
@@ -283,7 +287,7 @@ public class AnalizadorSemanticoY {
         }
         ctx.getTabla().salirAmbito();
 
-        for (NodoRamaSino rama : nodo.getRamasSino()) {
+        for (NodoRamaSinoY rama : nodo.getRamasSino()) {
             this.validarCondicionBooleana(rama.getCondicion(), ctx);
             ctx.getTabla().entrarAmbito();
             for (NodoAST s : rama.getCuerpo()) {
@@ -301,7 +305,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarElegir(NodoElegir nodo, Contexto ctx) {
+    private void validarElegir(NodoSwitch nodo, Contexto ctx) {
         TipoDato tipoEvaluado = this.inferirTipo(nodo.getValorEvaluado(), ctx);
         boolean estabaEnCaso = ctx.isDentroDeCasoElegir();
         ctx.setDentroDeCasoElegir(true);
@@ -318,9 +322,9 @@ public class AnalizadorSemanticoY {
             }
             ctx.getTabla().salirAmbito();
         }
-        if (nodo.getSiempre() != null) {
+        if (nodo.getPorDefecto()!= null) {
             ctx.getTabla().entrarAmbito();
-            for (NodoAST s : nodo.getSiempre().getCuerpo()) {
+            for (NodoAST s : nodo.getPorDefecto().getCuerpo()) {
                 validarSentencia(s, ctx);
             }
             ctx.getTabla().salirAmbito();
@@ -329,7 +333,7 @@ public class AnalizadorSemanticoY {
         ctx.setDentroDeCasoElegir(estabaEnCaso);
     }
 
-    private void validarPara(NodoPara nodo, Contexto ctx) {
+    private void validarPara(NodoFor nodo, Contexto ctx) {
         ctx.getTabla().entrarAmbito();
         this.validarSentencia(nodo.getInit(), ctx);
         this.validarCondicionBooleana(nodo.getCondicion(), ctx);
@@ -345,7 +349,7 @@ public class AnalizadorSemanticoY {
         ctx.getTabla().salirAmbito();
     }
 
-    private void validarMientras(NodoMientras nodo, Contexto ctx) {
+    private void validarMientras(NodoWhile nodo, Contexto ctx) {
         validarCondicionBooleana(nodo.getCondicion(), ctx);
         boolean estabaEnCiclo = ctx.isDentroDeCiclo();
         ctx.setDentroDeCiclo(true);
@@ -357,7 +361,7 @@ public class AnalizadorSemanticoY {
         ctx.setDentroDeCiclo(estabaEnCiclo);
     }
 
-    private void validarHacerMientras(NodoHacerMientras nodo, Contexto ctx) {
+    private void validarHacerMientras(NodoDoWhile nodo, Contexto ctx) {
         boolean estabaEnCiclo = ctx.isDentroDeCiclo();
         ctx.setDentroDeCiclo(true);
         ctx.getTabla().entrarAmbito();

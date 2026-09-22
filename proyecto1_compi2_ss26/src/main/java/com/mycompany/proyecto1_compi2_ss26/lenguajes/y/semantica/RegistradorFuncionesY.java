@@ -5,7 +5,7 @@
 package com.mycompany.proyecto1_compi2_ss26.lenguajes.y.semantica;
 
 import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoParametro;
-import com.mycompany.proyecto1_compi2_ss26.ast.y.sentencias.NodoFuncionY;
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoFuncion;
 import com.mycompany.proyecto1_compi2_ss26.errores.RecolectorErrores;
 import com.mycompany.proyecto1_compi2_ss26.modelos.ModoPaso;
 import com.mycompany.proyecto1_compi2_ss26.modelos.Primitivo;
@@ -36,10 +36,10 @@ public class RegistradorFuncionesY {
         this.coleccionErrores = coleccionErrores;
     }
 
-    public Map<String, List<DescriptorFuncion>> registrar(List<NodoFuncionY> funcionesAST, Map<String, DescriptorEstructura> estructuras) {
+    public Map<String, List<DescriptorFuncion>> registrar(List<NodoFuncion> funcionesAST, Map<String, DescriptorEstructura> estructuras) {
         Map<String, List<DescriptorFuncion>> registro = new HashMap<>();
 
-        for (NodoFuncionY funcionAST : funcionesAST) {
+        for (NodoFuncion funcionAST : funcionesAST) {
             List<DescriptorParametro> parametros = new ArrayList<>();
             boolean parametrosValidos = true;
 

@@ -11,14 +11,14 @@ import java.util.List;
  *
  * @author david
  */
-public class NodoSi extends NodoAST {
+public class NodoSiY extends NodoAST {
 
     private final NodoAST condicion;
     private final List<NodoAST> cuerpoSi;
-    private final List<NodoRamaSino> ramasSino;
+    private final List<NodoRamaSinoY> ramasSino;
     private final List<NodoAST> cuerpoContrario;
 
-    public NodoSi(NodoAST condicion, List<NodoAST> cuerpoSi, List<NodoRamaSino> ramasSino, List<NodoAST> cuerpoContrario, int line) {
+    public NodoSiY(NodoAST condicion, List<NodoAST> cuerpoSi, List<NodoRamaSinoY> ramasSino, List<NodoAST> cuerpoContrario, int line) {
         super(line);
         this.condicion = condicion;
         this.cuerpoSi = cuerpoSi;
@@ -34,7 +34,7 @@ public class NodoSi extends NodoAST {
         return cuerpoSi;
     }
 
-    public List<NodoRamaSino> getRamasSino() {
+    public List<NodoRamaSinoY> getRamasSino() {
         return ramasSino;
     }
 

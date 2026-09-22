@@ -11,12 +11,12 @@ import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoAccesoVariable;
  *
  * @author david
  */
-public class NodoIncrementoDecremento extends NodoAST {
+public class NodoIncDec extends NodoAST {
 
     private final NodoAccesoVariable destino;
     private final String operador;
 
-    public NodoIncrementoDecremento(NodoAccesoVariable destino, String operador, int line) {
+    public NodoIncDec(NodoAccesoVariable destino, String operador, int line) {
         super(line);
         this.destino = destino;
         this.operador = operador;

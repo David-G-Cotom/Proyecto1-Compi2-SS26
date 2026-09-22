@@ -4,6 +4,10 @@
  */
 package com.mycompany.proyecto1_compi2_ss26.lenguajes.y;
 
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoFor;
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoLeer;
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoFuncion;
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoCaso;
 import com.mycompany.YBaseVisitor;
 import com.mycompany.YParser;
 import com.mycompany.proyecto1_compi2_ss26.ast.NodoAST;
@@ -33,8 +37,8 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
                 estructuras.add((NodoEstructura) visitEstructura(e));
             }
         }
-        List<NodoFuncionY> funciones = ctx.seccionFunciones().funcion().stream()
-                .map(f -> (NodoFuncionY) visitFuncion(f))
+        List<NodoFuncion> funciones = ctx.seccionFunciones().funcion().stream()
+                .map(f -> (NodoFuncion) visitFuncion(f))
                 .collect(Collectors.toList());
         return new NodoArchivoY(estructuras, funciones, ctx.getStart().getLine());
     }
@@ -63,7 +67,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
         }
         String tipoRetorno = ctx.tipoDato() != null ? ctx.tipoDato().getText() : null;
         List<NodoAST> cuerpo = ctx.bloqueSentencias().sentencia().stream().map(this::visit).collect(Collectors.toList());
-        return new NodoFuncionY(ctx.ID().getText(), parametros, tipoRetorno, cuerpo, ctx.getStart().getLine());
+        return new NodoFuncion(ctx.ID().getText(), parametros, tipoRetorno, cuerpo, ctx.getStart().getLine());
     }
 
     private NodoParametro construirParametro(YParser.ParametroContext ctx) {
@@ -109,7 +113,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
     @Override
     public NodoAST visitIncrementoDecremento(YParser.IncrementoDecrementoContext ctx) {
         NodoAccesoVariable destino = (NodoAccesoVariable) visitAccesoVariable(ctx.accesoVariable());
-        return new NodoIncrementoDecremento(destino, ctx.op.getText(), ctx.getStart().getLine());
+        return new NodoIncDec(destino, ctx.op.getText(), ctx.getStart().getLine());
     }
 
     @Override
@@ -222,7 +226,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
 
     @Override
     public NodoAST visitSentenciaImprimir(YParser.SentenciaImprimirContext ctx) {
-        return new NodoImprimir(visit(ctx.expresion()), ctx.getStart().getLine());
+        return new NodoImprimirY(visit(ctx.expresion()), ctx.getStart().getLine());
     }
 
     @Override
@@ -261,7 +265,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
         List<NodoAST> cuerpoSi = leerBloqueSentencias(hijos, inicioBloqueSi);
         i = avanzarHasta(hijos, inicioBloqueSi, YParser.DEDENT) + 1;
 
-        List<NodoRamaSino> ramasSino = new ArrayList<>();
+        List<NodoRamaSinoY> ramasSino = new ArrayList<>();
         while (i < hijos.size() && esToken(hijos.get(i), YParser.KW_SINO)) {
             i++; // consume KW_SINO
             while (!(hijos.get(i) instanceof YParser.ExpresionContext)) {
@@ -275,7 +279,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
             List<NodoAST> cuerpoSino = leerBloqueSentencias(hijos, inicioBloqueSino);
             i = avanzarHasta(hijos, inicioBloqueSino, YParser.DEDENT) + 1;
 
-            ramasSino.add(new NodoRamaSino(condSino, cuerpoSino, lineaSino));
+            ramasSino.add(new NodoRamaSinoY(condSino, cuerpoSino, lineaSino));
         }
 
         List<NodoAST> cuerpoContrario = null;
@@ -285,7 +289,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
             cuerpoContrario = leerBloqueSentencias(hijos, inicioBloqueContrario);
         }
 
-        return new NodoSi(condicion, cuerpoSi, ramasSino, cuerpoContrario, ctx.getStart().getLine());
+        return new NodoSiY(condicion, cuerpoSi, ramasSino, cuerpoContrario, ctx.getStart().getLine());
     }
 
     private boolean esToken(ParseTree nodo, int tipoToken) {
@@ -325,9 +329,9 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
         List<NodoCaso> casos = ctx.casoElegir().stream()
                 .map(c -> (NodoCaso) visitCasoElegir(c))
                 .collect(Collectors.toList());
-        NodoSiempre siempre = ctx.siempreElegir() != null
-                ? (NodoSiempre) visitSiempreElegir(ctx.siempreElegir()) : null;
-        return new NodoElegir(valor, casos, siempre, ctx.getStart().getLine());
+        NodoDefaultSwitch siempre = ctx.siempreElegir() != null
+                ? (NodoDefaultSwitch) visitSiempreElegir(ctx.siempreElegir()) : null;
+        return new NodoSwitch(ctx.getStart().getLine(), valor, casos, siempre);
     }
 
     @Override
@@ -340,7 +344,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
     @Override
     public NodoAST visitSiempreElegir(YParser.SiempreElegirContext ctx) {
         List<NodoAST> cuerpo = ctx.bloqueSentencias().sentencia().stream().map(this::visit).collect(Collectors.toList());
-        return new NodoSiempre(cuerpo, ctx.getStart().getLine());
+        return new NodoDefaultSwitch(ctx.getStart().getLine(), cuerpo);
     }
 
     @Override
@@ -349,7 +353,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
         NodoAST condicion = visit(ctx.expresion());
         NodoAST actualizacion = visit(ctx.paraActualizacion());
         List<NodoAST> cuerpo = ctx.bloqueSentencias().sentencia().stream().map(this::visit).collect(Collectors.toList());
-        return new NodoPara(init, condicion, actualizacion, cuerpo, ctx.getStart().getLine());
+        return new NodoFor(init, condicion, actualizacion, cuerpo, ctx.getStart().getLine());
     }
 
     @Override
@@ -366,7 +370,7 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
     public NodoAST visitParaActualizacion(YParser.ParaActualizacionContext ctx) {
         NodoAccesoVariable destino = (NodoAccesoVariable) visitAccesoVariable(ctx.accesoVariable());
         if (ctx.op != null) {
-            return new NodoIncrementoDecremento(destino, ctx.op.getText(), ctx.getStart().getLine());
+            return new NodoIncDec(destino, ctx.op.getText(), ctx.getStart().getLine());
         }
         return new NodoAsignacion(destino, visit(ctx.expresion()), ctx.getStart().getLine());
     }
@@ -375,14 +379,14 @@ public class ConstructorASTY extends YBaseVisitor<NodoAST> {
     public NodoAST visitSentenciaMientras(YParser.SentenciaMientrasContext ctx) {
         NodoAST condicion = visit(ctx.expresion());
         List<NodoAST> cuerpo = ctx.bloqueSentencias().sentencia().stream().map(this::visit).collect(Collectors.toList());
-        return new NodoMientras(condicion, cuerpo, ctx.getStart().getLine());
+        return new NodoWhile(ctx.getStart().getLine(), condicion, cuerpo);
     }
 
     @Override
     public NodoAST visitSentenciaHacerMientras(YParser.SentenciaHacerMientrasContext ctx) {
         List<NodoAST> cuerpo = ctx.bloqueSentencias().sentencia().stream().map(this::visit).collect(Collectors.toList());
         NodoAST condicion = visit(ctx.expresion());
-        return new NodoHacerMientras(cuerpo, condicion, ctx.getStart().getLine());
+        return new NodoDoWhile(ctx.getStart().getLine(), cuerpo, condicion);
     }
 
     @Override

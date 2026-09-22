@@ -2,9 +2,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.proyecto1_compi2_ss26.ast.y.sentencias;
+package com.mycompany.proyecto1_compi2_ss26.ast.sentencias;
 
-import com.mycompany.proyecto1_compi2_ss26.ast.y.sentencias.NodoSiempre;
 import com.mycompany.proyecto1_compi2_ss26.ast.NodoAST;
 import java.util.List;
 
@@ -12,17 +11,17 @@ import java.util.List;
  *
  * @author david
  */
-public class NodoElegir extends NodoAST {
+public class NodoSwitch extends NodoAST {
 
     private final NodoAST valorEvaluado;
     private final List<NodoCaso> casos;
-    private final NodoSiempre siempre;
+    private final NodoDefaultSwitch porDefecto;
 
-    public NodoElegir(NodoAST valorEvaluado, List<NodoCaso> casos, NodoSiempre siempre, int line) {
-        super(line);
+    public NodoSwitch(int linea, NodoAST valorEvaluado, List<NodoCaso> casos, NodoDefaultSwitch porDefecto) {
+        super(linea);
         this.valorEvaluado = valorEvaluado;
         this.casos = casos;
-        this.siempre = siempre;
+        this.porDefecto = porDefecto;
     }
 
     public NodoAST getValorEvaluado() {
@@ -33,8 +32,8 @@ public class NodoElegir extends NodoAST {
         return casos;
     }
 
-    public NodoSiempre getSiempre() {
-        return siempre;
+    public NodoDefaultSwitch getPorDefecto() {
+        return porDefecto;
     }
 
 }

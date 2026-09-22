@@ -4,7 +4,7 @@
  */
 package com.mycompany.proyecto1_compi2_ss26.ast.y;
 
-import com.mycompany.proyecto1_compi2_ss26.ast.y.sentencias.NodoFuncionY;
+import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoFuncion;
 import com.mycompany.proyecto1_compi2_ss26.ast.NodoAST;
 import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoEstructura;
 import java.util.List;
@@ -16,9 +16,9 @@ import java.util.List;
 public class NodoArchivoY extends NodoAST {
 
     private final List<NodoEstructura> estructuras;
-    private final List<NodoFuncionY> funciones;
+    private final List<NodoFuncion> funciones;
 
-    public NodoArchivoY(List<NodoEstructura> estructuras, List<NodoFuncionY> funciones, int line) {
+    public NodoArchivoY(List<NodoEstructura> estructuras, List<NodoFuncion> funciones, int line) {
         super(line);
         this.estructuras = estructuras;
         this.funciones = funciones;
@@ -28,7 +28,7 @@ public class NodoArchivoY extends NodoAST {
         return estructuras;
     }
 
-    public List<NodoFuncionY> getFunciones() {
+    public List<NodoFuncion> getFunciones() {
         return funciones;
     }
 
