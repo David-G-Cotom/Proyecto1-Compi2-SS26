@@ -4,6 +4,7 @@
  */
 package com.mycompany.proyecto1_compi2_ss26.lenguajes.y.semantica;
 
+import com.mycompany.proyecto1_compi2_ss26.lenguajes.semantica.TablaSimbolosLocal;
 import com.mycompany.proyecto1_compi2_ss26.tipos.DescriptorEstructura;
 import com.mycompany.proyecto1_compi2_ss26.tipos.DescriptorFuncion;
 import com.mycompany.proyecto1_compi2_ss26.tipos.TipoDato;
@@ -14,7 +15,7 @@ import java.util.Map;
  *
  * @author david
  */
-public class Contexto {
+public class ContextoY {
 
     private final Map<String, DescriptorEstructura> estructurasVisibles;
     private final Map<String, List<DescriptorFuncion>> funcionesVisibles;
@@ -23,7 +24,7 @@ public class Contexto {
     private boolean dentroDeCiclo = false;
     private boolean dentroDeCasoElegir = false;
 
-    public Contexto(Map<String, DescriptorEstructura> estructurasVisibles, Map<String, List<DescriptorFuncion>> funcionesVisibles, TipoDato tipoRetornoFuncionActual) {
+    public ContextoY(Map<String, DescriptorEstructura> estructurasVisibles, Map<String, List<DescriptorFuncion>> funcionesVisibles, TipoDato tipoRetornoFuncionActual) {
         this.tabla = new TablaSimbolosLocal();
         this.estructurasVisibles = estructurasVisibles;
         this.funcionesVisibles = funcionesVisibles;

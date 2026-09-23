@@ -4,35 +4,15 @@
  */
 package com.mycompany.proyecto1_compi2_ss26.lenguajes.y.semantica;
 
-import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoFor;
-import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoLeer;
-import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoFuncion;
-import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.NodoCaso;
 import com.mycompany.proyecto1_compi2_ss26.ast.NodoAST;
-import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoAccesoVariable;
-import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoBinario;
-import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoLiteral;
-import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoLiteralCompuesto;
-import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoLlamadaFuncion;
-import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoSufijoCampo;
-import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoSufijoIndice;
-import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.NodoUnario;
+import com.mycompany.proyecto1_compi2_ss26.ast.expresiones.*;
 import com.mycompany.proyecto1_compi2_ss26.ast.sentencias.*;
 import com.mycompany.proyecto1_compi2_ss26.ast.y.NodoArchivoY;
 import com.mycompany.proyecto1_compi2_ss26.ast.y.sentencias.*;
 import com.mycompany.proyecto1_compi2_ss26.errores.RecolectorErrores;
 import com.mycompany.proyecto1_compi2_ss26.excepciones.ErrorConstante;
 import com.mycompany.proyecto1_compi2_ss26.modelos.Primitivo;
-import com.mycompany.proyecto1_compi2_ss26.tipos.CatalogoExportado;
-import com.mycompany.proyecto1_compi2_ss26.tipos.DescriptorCampo;
-import com.mycompany.proyecto1_compi2_ss26.tipos.DescriptorEstructura;
-import com.mycompany.proyecto1_compi2_ss26.tipos.DescriptorFuncion;
-import com.mycompany.proyecto1_compi2_ss26.tipos.DescriptorParametro;
-import com.mycompany.proyecto1_compi2_ss26.tipos.TipoArreglo;
-import com.mycompany.proyecto1_compi2_ss26.tipos.TipoDato;
-import com.mycompany.proyecto1_compi2_ss26.tipos.TipoEstructura;
-import com.mycompany.proyecto1_compi2_ss26.tipos.TipoPrimitivo;
-import com.mycompany.proyecto1_compi2_ss26.tipos.TipoVacio;
+import com.mycompany.proyecto1_compi2_ss26.tipos.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -112,7 +92,7 @@ public class AnalizadorSemanticoY {
 
     private void analizarFuncion(NodoFuncion funcionAST, Map<String, DescriptorEstructura> estructuras,
             Map<String, List<DescriptorFuncion>> funciones, TipoDato tipoRetorno) {
-        Contexto ctx = new Contexto(new HashMap<>(estructuras), funciones, tipoRetorno);
+        ContextoY ctx = new ContextoY(new HashMap<>(estructuras), funciones, tipoRetorno);
 
         for (NodoParametro parametro : funcionAST.getParametros()) {
             TipoDato tipo = this.resolverTipoTexto(parametro.getTipoTexto(), ctx.getEstructurasVisibles(), parametro.getLinea());
@@ -126,7 +106,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarSentencia(NodoAST nodo, Contexto ctx) {
+    private void validarSentencia(NodoAST nodo, ContextoY ctx) {
         if (nodo instanceof NodoEstructura nodoEstructura) {
             this.registrarEstructuraLocal(nodoEstructura, ctx);
         } else if (nodo instanceof NodoDeclaracionVariable nodoDeclaracionVariable) {
@@ -167,7 +147,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void registrarEstructuraLocal(NodoEstructura nodo, Contexto ctx) {
+    private void registrarEstructuraLocal(NodoEstructura nodo, ContextoY ctx) {
         if (ctx.getEstructurasVisibles().containsKey(nodo.getNombre())) {
             this.error(nodo, "Estructura local '" + nodo.getNombre() + "' colisiona con una ya global");
             return;
@@ -198,7 +178,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarDeclaracion(NodoDeclaracionVariable nodo, Contexto ctx) {
+    private void validarDeclaracion(NodoDeclaracionVariable nodo, ContextoY ctx) {
         TipoDato tipoBase = this.resolverTipoTexto(nodo.getTipo(), ctx.getEstructurasVisibles(), nodo.getLinea());
         if (tipoBase == null) {
             return;
@@ -235,7 +215,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarLiteralCompuesto(NodoLiteralCompuesto literal, TipoDato tipoEsperado, Contexto ctx) {
+    private void validarLiteralCompuesto(NodoLiteralCompuesto literal, TipoDato tipoEsperado, ContextoY ctx) {
         switch (tipoEsperado) {
             case TipoArreglo tipoArreglo -> {
                 TipoDato tipoElemento = tipoArreglo.getTipoBase();
@@ -270,7 +250,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarAsignacion(NodoAsignacion nodo, Contexto ctx) {
+    private void validarAsignacion(NodoAsignacion nodo, ContextoY ctx) {
         TipoDato tipoDestino = this.inferirTipo(nodo.getDestino(), ctx);
         TipoDato tipoValor = this.inferirTipo(nodo.getValor(), ctx);
         if (tipoDestino != null && tipoValor != null && !this.isCompatibleAsignacion(tipoDestino, tipoValor)) {
@@ -279,7 +259,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarSi(NodoSiY nodo, Contexto ctx) {
+    private void validarSi(NodoSiY nodo, ContextoY ctx) {
         this.validarCondicionBooleana(nodo.getCondicion(), ctx);
         ctx.getTabla().entrarAmbito();
         for (NodoAST s : nodo.getCuerpoSi()) {
@@ -305,7 +285,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarElegir(NodoSwitch nodo, Contexto ctx) {
+    private void validarElegir(NodoSwitch nodo, ContextoY ctx) {
         TipoDato tipoEvaluado = this.inferirTipo(nodo.getValorEvaluado(), ctx);
         boolean estabaEnCaso = ctx.isDentroDeCasoElegir();
         ctx.setDentroDeCasoElegir(true);
@@ -333,7 +313,7 @@ public class AnalizadorSemanticoY {
         ctx.setDentroDeCasoElegir(estabaEnCaso);
     }
 
-    private void validarPara(NodoFor nodo, Contexto ctx) {
+    private void validarPara(NodoFor nodo, ContextoY ctx) {
         ctx.getTabla().entrarAmbito();
         this.validarSentencia(nodo.getInit(), ctx);
         this.validarCondicionBooleana(nodo.getCondicion(), ctx);
@@ -349,7 +329,7 @@ public class AnalizadorSemanticoY {
         ctx.getTabla().salirAmbito();
     }
 
-    private void validarMientras(NodoWhile nodo, Contexto ctx) {
+    private void validarMientras(NodoWhile nodo, ContextoY ctx) {
         validarCondicionBooleana(nodo.getCondicion(), ctx);
         boolean estabaEnCiclo = ctx.isDentroDeCiclo();
         ctx.setDentroDeCiclo(true);
@@ -361,7 +341,7 @@ public class AnalizadorSemanticoY {
         ctx.setDentroDeCiclo(estabaEnCiclo);
     }
 
-    private void validarHacerMientras(NodoDoWhile nodo, Contexto ctx) {
+    private void validarHacerMientras(NodoDoWhile nodo, ContextoY ctx) {
         boolean estabaEnCiclo = ctx.isDentroDeCiclo();
         ctx.setDentroDeCiclo(true);
         ctx.getTabla().entrarAmbito();
@@ -373,7 +353,7 @@ public class AnalizadorSemanticoY {
         validarCondicionBooleana(nodo.getCondicion(), ctx);
     }
 
-    private void validarRetornar(NodoRetornar nodo, Contexto ctx) {
+    private void validarRetornar(NodoRetornar nodo, ContextoY ctx) {
         boolean esperaValor = !(ctx.getTipoRetornoFuncionActual() instanceof TipoVacio);
         if (esperaValor && nodo.getExpresion() == null) {
             error(nodo, "La función debe retornar un valor de tipo " + ctx.getTipoRetornoFuncionActual());
@@ -391,14 +371,14 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private void validarCondicionBooleana(NodoAST condicion, Contexto ctx) {
+    private void validarCondicionBooleana(NodoAST condicion, ContextoY ctx) {
         TipoDato tipo = this.inferirTipo(condicion, ctx);
         if (tipo != null && !this.esBooleano(tipo)) {
             this.error(condicion, "Se esperaba una condición de tipo booleano, se obtuvo " + tipo);
         }
     }
 
-    private TipoDato inferirTipo(NodoAST nodo, Contexto ctx) {
+    private TipoDato inferirTipo(NodoAST nodo, ContextoY ctx) {
         if (nodo instanceof NodoLiteral nodoLiteral) {
             return switch (nodoLiteral.getTipo()) {
                 case ENTERO ->
@@ -435,7 +415,7 @@ public class AnalizadorSemanticoY {
         return null;
     }
 
-    private TipoDato inferirTipoBinaria(NodoBinario nodo, Contexto ctx) {
+    private TipoDato inferirTipoBinaria(NodoBinario nodo, ContextoY ctx) {
         TipoDato izq = this.inferirTipo(nodo.getIzquierda(), ctx);
         TipoDato der = this.inferirTipo(nodo.getDerecha(), ctx);
         String op = nodo.getOperador();
@@ -481,7 +461,7 @@ public class AnalizadorSemanticoY {
         }
     }
 
-    private TipoDato inferirTipoAcceso(NodoAccesoVariable nodo, Contexto ctx) {
+    private TipoDato inferirTipoAcceso(NodoAccesoVariable nodo, ContextoY ctx) {
         TipoDato tipoActual = ctx.getTabla().buscar(nodo.getNombre());
         if (tipoActual == null) {
             this.error(nodo, "Variable no declarada: '" + nodo.getNombre() + "'");
@@ -521,7 +501,7 @@ public class AnalizadorSemanticoY {
         return tipoActual;
     }
 
-    private TipoDato inferirTipoLlamada(NodoLlamadaFuncion nodo, Contexto ctx) {
+    private TipoDato inferirTipoLlamada(NodoLlamadaFuncion nodo, ContextoY ctx) {
         List<DescriptorFuncion> sobrecargas = ctx.getFuncionesVisibles().get(nodo.getNombre());
         if (sobrecargas == null || sobrecargas.isEmpty()) {
             this.error(nodo, "Función no declarada: '" + nodo.getNombre() + "'");

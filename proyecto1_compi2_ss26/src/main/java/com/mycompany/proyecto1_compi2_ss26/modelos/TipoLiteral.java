@@ -14,6 +14,7 @@ public enum TipoLiteral {
     FLOTANTE,
     CARACTER,
     CADENA,
-    BOOLEANO;
+    BOOLEANO,
+    NULO;
 
 }
