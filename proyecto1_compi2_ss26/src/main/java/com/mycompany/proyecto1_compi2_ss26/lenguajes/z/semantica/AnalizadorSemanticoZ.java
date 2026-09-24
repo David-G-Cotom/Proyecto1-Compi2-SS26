@@ -37,6 +37,8 @@ public class AnalizadorSemanticoZ {
         RegistradorClasesZ registrador = new RegistradorClasesZ(coleccionErrores, new TablaTiposClase());
         DescriptorClase clase = registrador.registrar(archivo);
 
+        validarInicializadoresAtributos(archivo, clase);
+
         for (NodoConstructorZ constructorAST : archivo.getConstructores()) {
             analizarCuerpo(constructorAST.getParametros(), constructorAST.getCuerpo(), clase, TipoVacio.INSTANCIA);
         }
@@ -134,6 +136,28 @@ public class AnalizadorSemanticoZ {
         }
     }
 
+    private void validarInicializadoresAtributos(NodoArchivoZ archivo, DescriptorClase clase) {
+        ContextoZ ctx = new ContextoZ(clase, TipoVacio.INSTANCIA);
+        for (NodoAtributoZ atributoAST : archivo.getAtributos()) {
+            TipoDato tipo = resolverTipoTexto(atributoAST.getTipoBaseTexto(), clase, atributoAST.getLinea());
+            if (tipo == null) {
+                continue;
+            }
+            for (NodoDeclaradorZ declarador : atributoAST.getDeclaradores()) {
+                NodoAST init = declarador.getInicializador();
+                if (init instanceof NodoLiteralCompuesto nodoLiteralCompuesto) {
+                    validarLiteralCompuesto(nodoLiteralCompuesto, tipo, ctx);
+                } else if (init != null) {
+                    TipoDato tipoInit = inferirTipo(init, ctx);
+                    if (tipoInit != null && !compatibleAsignacion(tipo, tipoInit)) {
+                        error(declarador, "No se puede inicializar el atributo '" + declarador.getNombre() + "' (" + tipo
+                                + ") con un valor de tipo " + tipoInit);
+                    }
+                }
+            }
+        }
+    }
+
     private void validarDeclaracion(NodoDeclaracionVariableZ nodo, ContextoZ ctx) {
         TipoDato tipo = resolverTipoTexto(nodo.getTipoBaseTexto(), ctx.getClase(), nodo.getLinea());
         if (tipo == null) {
@@ -188,7 +212,10 @@ public class AnalizadorSemanticoZ {
             }
             return;
         }
-        // Asignación compuesta (+= -= *= /= %=): ambos lados deben ser numéricos.
+        // Asignación compuesta (+= -= *= /= %=)
+        if (nodo.getOperador().equals("+=") && esTipoPrimitivo(tipoDestino, Primitivo.CADENA)) {
+            return;
+        }
         if (!esNumerico(tipoDestino) || !esNumerico(tipoValor)) {
             error(nodo, "'" + nodo.getOperador() + "' requiere operandos numéricos (se obtuvo " + tipoDestino
                     + ", " + tipoValor + ")");
@@ -383,7 +410,23 @@ public class AnalizadorSemanticoZ {
         String op = nodo.getOperador();
 
         switch (op) {
-            case "+", "-", "*", "/", "%" -> {
+            case "+" -> {
+                if (izq == null || der == null) {
+                    return null;
+                }
+                if (esTipoPrimitivo(izq, Primitivo.CADENA) || esTipoPrimitivo(der, Primitivo.CADENA)) {
+                    return new TipoPrimitivo(Primitivo.CADENA);
+                }
+                if (!esNumerico(izq) || !esNumerico(der)) {
+                    error(nodo, "Operador '+' requiere operandos numéricos o que alguno sea CADENA (se obtuvo " + izq + ", " + der + ")");
+                    return new TipoPrimitivo(Primitivo.ENTERO);
+                }
+                boolean esFlotanteSuma = esTipoPrimitivo(izq, Primitivo.FLOTANTE)
+                        || esTipoPrimitivo(der, Primitivo.FLOTANTE);
+                return new TipoPrimitivo(esFlotanteSuma ? Primitivo.FLOTANTE : Primitivo.ENTERO);
+            }
+
+            case "-", "*", "/", "%" -> {
                 if (izq == null || der == null) {
                     return null;
                 }
@@ -416,6 +459,7 @@ public class AnalizadorSemanticoZ {
                 }
                 return new TipoPrimitivo(Primitivo.BOOLEANO);
             }
+
             default -> {
                 return null;
             }

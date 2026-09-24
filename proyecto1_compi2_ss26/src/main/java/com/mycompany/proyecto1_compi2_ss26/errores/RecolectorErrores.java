@@ -46,6 +46,10 @@ public class RecolectorErrores extends BaseErrorListener {
         this.errors.add(new Error(TipoError.SEMANTICO, line, column, message, null));
     }
 
+    public void addAll(List<Error> erroresDeArchivoImportado) {
+        this.errors.addAll(erroresDeArchivoImportado);
+    }
+
     public void addLexicalError(int line, int column, String message, String symbol) {
         this.errors.add(new Error(TipoError.LEXICO, line, column, message, symbol));
     }
